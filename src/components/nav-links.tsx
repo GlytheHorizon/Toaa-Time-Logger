@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import type { ClassRecord, UserProfile } from '@/lib/types';
 import { usePathname } from 'next/navigation';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { Shield, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { isAdminEmail } from '@/lib/constants';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 type NavLinksProps = {
@@ -25,12 +26,12 @@ export function NavLinks({ stacked = false }: NavLinksProps) {
     // Hides the link immediately if not admin
     const isAdmin = isAdminEmail(user?.email);
 
-    const myProfileQuery = useMemoFirebase(
-      () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),
+        const myProfileRef = useMemoFirebase(
+            () => (user?.uid ? doc(firestore, 'users', user.uid, 'userProfile', user.uid) : null),
       [firestore, user?.uid]
     );
-    const { data: myProfileData } = useCollection<UserProfile>(myProfileQuery);
-    const myRole = myProfileData?.[0]?.role;
+        const { data: myProfile } = useDoc<UserProfile>(myProfileRef);
+        const myRole = myProfile?.role;
         const howToUseHref = myRole ? `/how-to-use?role=${myRole}` : '/how-to-use';
 
         const myClassesQuery = useMemoFirebase(

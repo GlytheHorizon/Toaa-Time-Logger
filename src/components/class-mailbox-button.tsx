@@ -3,8 +3,9 @@
 import { Mail } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import type { ClassMessage, UserProfile, UserRole } from '@/lib/types';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, doc, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import ClassMailbox from '@/components/class-mailbox';
@@ -17,12 +18,11 @@ export function ClassMailboxButton() {
   const [seenAnnouncementAt, setSeenAnnouncementAt] = useState(0);
   const [seenConversationAt, setSeenConversationAt] = useState(0);
 
-  const myProfileQuery = useMemoFirebase(
-    () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),
+  const myProfileRef = useMemoFirebase(
+    () => (user?.uid ? doc(firestore, 'users', user.uid, 'userProfile', user.uid) : null),
     [firestore, user?.uid]
   );
-  const { data: myProfileData } = useCollection<UserProfile>(myProfileQuery);
-  const myProfile = myProfileData?.[0] || null;
+  const { data: myProfile } = useDoc<UserProfile>(myProfileRef);
 
   const role = (myProfile?.role || 'student') as UserRole;
   const hasClassMailbox = !!myProfile?.classId && role !== 'professor';

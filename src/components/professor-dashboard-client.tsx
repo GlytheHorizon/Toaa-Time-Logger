@@ -17,6 +17,7 @@ import {
 } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 import type { ClassRecord, TimeEntry, UserProfile } from '@/lib/types';
 import LoadingSpinner from '@/components/loading-spinner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,12 +70,11 @@ export default function ProfessorDashboardClient() {
 
   const generateClassId = () => `CLS-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
-  const myProfileQuery = useMemoFirebase(
-    () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),
+  const myProfileRef = useMemoFirebase(
+    () => (user?.uid ? doc(firestore, 'users', user.uid, 'userProfile', user.uid) : null),
     [firestore, user?.uid]
   );
-  const { data: myProfileData, isLoading: myProfileLoading } = useCollection<UserProfile>(myProfileQuery);
-  const myProfile = myProfileData?.[0] || null;
+  const { data: myProfile, isLoading: myProfileLoading } = useDoc<UserProfile>(myProfileRef);
 
   const myClassesQuery = useMemoFirebase(
     () => (user?.uid ? query(collection(firestore, 'classes'), where('ownerId', '==', user.uid)) : null),

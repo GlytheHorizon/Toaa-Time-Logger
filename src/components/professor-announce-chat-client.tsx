@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { collection, collectionGroup, query, where } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { doc } from 'firebase/firestore';
 import type { ClassRecord, UserProfile } from '@/lib/types';
 import LoadingSpinner from '@/components/loading-spinner';
 import ClassMailbox from '@/components/class-mailbox';
@@ -19,12 +21,11 @@ export default function ProfessorAnnounceChatClient() {
 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
 
-  const myProfileQuery = useMemoFirebase(
-    () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),
+  const myProfileRef = useMemoFirebase(
+    () => (user?.uid ? doc(firestore, 'users', user.uid, 'userProfile', user.uid) : null),
     [firestore, user?.uid]
   );
-  const { data: myProfileData, isLoading: myProfileLoading } = useCollection<UserProfile>(myProfileQuery);
-  const myProfile = myProfileData?.[0] || null;
+  const { data: myProfile, isLoading: myProfileLoading } = useDoc<UserProfile>(myProfileRef);
 
   const myClassesQuery = useMemoFirebase(
     () => (user?.uid ? query(collection(firestore, 'classes'), where('ownerId', '==', user.uid)) : null),
