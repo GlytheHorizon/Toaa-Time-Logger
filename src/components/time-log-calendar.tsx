@@ -120,21 +120,26 @@ export function TimeLogCalendar({ timeEntries, isReadOnly = false }: TimeLogCale
               const dateKey = format(day, 'yyyy-MM-dd');
               const entries = entriesByDate[dateKey];
               const totalHoursForDay = entries?.reduce((sum, e) => sum + e.hoursWorked, 0);
+              const hasEntries = totalHoursForDay !== undefined;
 
               return (
                 <div
                   key={day.toString()}
-                  onClick={() => !isReadOnly && setDateToLog(day)}
+                  onClick={() => {
+                    if (!isReadOnly && !hasEntries) {
+                      setDateToLog(day);
+                    }
+                  }}
                   className={cn(
                     'border rounded-lg p-2 h-28 flex flex-col justify-start items-start relative group/day',
-                    !isReadOnly && 'cursor-pointer transition-colors hover:bg-accent/50',
+                    !isReadOnly && !hasEntries && 'cursor-pointer transition-colors hover:bg-accent/50',
                     isToday(day) && 'bg-accent/50 border-primary/50',
                     !isSameMonth(day, currentMonth) && 'text-muted-foreground bg-muted/20',
-                    totalHoursForDay !== undefined && 'border-primary border-2'
+                    hasEntries && 'border-primary border-2'
                   )}
                 >
                   <div className={cn("font-medium text-sm", isToday(day) && "text-primary font-bold")}>{getDate(day)}</div>
-                  {totalHoursForDay !== undefined ? (
+                  {hasEntries ? (
                     <Popover>
                       <PopoverTrigger asChild>
                         <div 

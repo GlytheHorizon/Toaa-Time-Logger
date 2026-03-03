@@ -150,6 +150,21 @@ export default function LoginPage() {
         const profileSnapshot = await getDocs(profileRef);
         const profile = profileSnapshot.docs[0]?.data() as { role?: string } | undefined;
 
+        const canonicalProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
+        const canonicalProfileSnapshot = await getDoc(canonicalProfileRef);
+
+        if (!canonicalProfileSnapshot.exists() && profileSnapshot.docs.length > 0) {
+          const sourceProfile = profileSnapshot.docs[0].data() as Record<string, unknown>;
+          await setDoc(
+            canonicalProfileRef,
+            {
+              ...sourceProfile,
+              id: user.uid,
+            },
+            { merge: true }
+          );
+        }
+
         if (profile?.role === 'professor') {
           router.push('/professor');
           return;

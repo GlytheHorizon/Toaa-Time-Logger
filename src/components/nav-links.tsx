@@ -31,6 +31,7 @@ export function NavLinks({ stacked = false }: NavLinksProps) {
     );
     const { data: myProfileData } = useCollection<UserProfile>(myProfileQuery);
     const myRole = myProfileData?.[0]?.role;
+        const howToUseHref = myRole ? `/how-to-use?role=${myRole}` : '/how-to-use';
 
         const myClassesQuery = useMemoFirebase(
             () => (user?.uid && myRole === 'professor' ? query(collection(firestore, 'classes'), where('ownerId', '==', user.uid)) : null),
@@ -92,7 +93,7 @@ export function NavLinks({ stacked = false }: NavLinksProps) {
     return (
         <div className={cn('flex items-center gap-2', stacked && 'flex-col items-stretch')}>
             <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
-                <Link href="/how-to-use">
+                <Link href={howToUseHref}>
                     How to Use
                 </Link>
             </Button>
