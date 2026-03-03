@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { collection } from 'firebase/firestore';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import type { TimeEntry, UserProfile } from './types';
 import { TOTAL_REQUIRED_HOURS } from './constants';
 import { differenceInCalendarWeeks, startOfWeek } from 'date-fns';
@@ -11,13 +11,11 @@ export const useTimeData = (userId?: string) => {
   const firestore = useFirestore();
   const [totalHours, setTotalHours] = useState(0);
 
-  const profileQuery = useMemoFirebase(
-    () => (userId ? collection(firestore, 'users', userId, 'userProfile') : null),
+  const profileRef = useMemoFirebase(
+    () => (userId ? doc(firestore, 'users', userId, 'userProfile', userId) : null),
     [firestore, userId]
   );
-  const { data: profileData, isLoading: profileLoading } =
-    useCollection<UserProfile>(profileQuery);
-  const profile = profileData?.[0] || null;
+  const { data: profile, isLoading: profileLoading } = useDoc<UserProfile>(profileRef);
 
   const timeEntriesQuery = useMemoFirebase(
     () => (userId ? collection(firestore, 'users', userId, 'timeEntries') : null),

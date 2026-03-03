@@ -72,7 +72,7 @@ export default function DashboardClient() {
       }
 
       const classDisplayName = (classSnapshot.data() as { displayName?: string }).displayName || null;
-      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', profile.id);
+      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
       await updateDoc(userProfileRef, {
         classId: nextClassId,
         classDisplayName,
@@ -97,7 +97,7 @@ export default function DashboardClient() {
 
     setIsLeavingClass(true);
     try {
-      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', profile.id);
+      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
       await updateDoc(userProfileRef, {
         classId: null,
         classDisplayName: null,

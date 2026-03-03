@@ -54,7 +54,7 @@ export function EditSubtitleDialog({ profile }: { profile: UserProfile | null })
 
     setIsSubmitting(true);
     
-    const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', profile.id);
+    const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
     const updatedData = { dashboardSubtitle: values.dashboardSubtitle };
 
     updateDoc(userProfileRef, updatedData)

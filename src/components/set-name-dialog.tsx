@@ -67,7 +67,7 @@ export function SetNameDialog({ open, onOpenChange, profile }: SetNameDialogProp
       });
 
       // Update Firestore profile
-      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', profile.id);
+      const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
       await updateDoc(userProfileRef, updatedData);
       
       toast({
@@ -79,7 +79,7 @@ export function SetNameDialog({ open, onOpenChange, profile }: SetNameDialogProp
       window.location.reload();
     } catch (error: any) {
         if (user && profile) {
-            const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', profile.id);
+            const userProfileRef = doc(firestore, 'users', user.uid, 'userProfile', user.uid);
             const contextualError = new FirestorePermissionError({
                 path: userProfileRef.path,
                 operation: 'update',
