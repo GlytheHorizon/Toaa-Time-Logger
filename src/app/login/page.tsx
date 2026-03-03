@@ -33,7 +33,7 @@ import { Input } from '@/components/ui/input';
 import { Clock, Eye, EyeOff } from 'lucide-react';
 import LoadingSpinner from '@/components/loading-spinner';
 import { useToast } from '@/hooks/use-toast';
-import { INTERNSHIP_START_DATE, TOTAL_REQUIRED_HOURS, ADMIN_EMAIL } from '@/lib/constants';
+import { INTERNSHIP_START_DATE, TOTAL_REQUIRED_HOURS, isAdminEmail } from '@/lib/constants';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const educationRoles = ['student', 'professor'] as const;
@@ -138,7 +138,7 @@ export default function LoginPage() {
     const routeByRole = async () => {
       if (isUserLoading || !user) return;
 
-      if (user.email === ADMIN_EMAIL) {
+      if (isAdminEmail(user.email)) {
         router.push('/ssslogs');
         return;
       }

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { collectionGroup, writeBatch, collection, getDocs } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { TimeEntry, UserProfile } from '@/lib/types';
-import { ADMIN_EMAIL } from '@/lib/constants';
+import { isAdminEmail } from '@/lib/constants';
 
 import LoadingSpinner from '@/components/loading-spinner';
 import { StatCard } from './stat-card';
@@ -34,7 +34,7 @@ export default function AdminDashboardClient() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [sortMethod, setSortMethod] = useState<'email-asc' | 'hours-desc' | 'latest-entry-desc'>('email-asc');
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (!isUserLoading) {

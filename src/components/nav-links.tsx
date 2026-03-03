@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { Shield, LayoutDashboard, MessageSquare } from 'lucide-react';
-import { ADMIN_EMAIL } from '@/lib/constants';
+import { isAdminEmail } from '@/lib/constants';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 
 export function NavLinks() {
@@ -18,7 +18,7 @@ export function NavLinks() {
     const [professorUnreadCount, setProfessorUnreadCount] = useState(0);
 
     // Hides the link immediately if not admin
-    const isAdmin = user?.email === ADMIN_EMAIL;
+    const isAdmin = isAdminEmail(user?.email);
 
     const myProfileQuery = useMemoFirebase(
       () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),

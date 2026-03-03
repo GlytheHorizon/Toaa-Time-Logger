@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ADMIN_EMAIL } from '@/lib/constants';
+import { isAdminEmail } from '@/lib/constants';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import type { Feedback } from '../lib/types';
@@ -39,7 +39,7 @@ export function AdminMailboxButton() {
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const isAdmin = user?.email === ADMIN_EMAIL;
+  const isAdmin = isAdminEmail(user?.email);
 
   useEffect(() => {
     if (!isAdmin) return;
