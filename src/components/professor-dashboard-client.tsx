@@ -109,17 +109,17 @@ export default function ProfessorDashboardClient() {
 
   const studentProfilesQuery = useMemoFirebase(
     () => (
-      selectedClassId
+      selectedClassId && myProfile?.role === 'professor'
         ? collectionGroup(firestore, 'userProfile')
         : null
     ),
-    [firestore, selectedClassId]
+    [firestore, selectedClassId, myProfile?.role]
   );
   const { data: allProfiles, isLoading: studentsLoading } = useCollection<UserProfile>(studentProfilesQuery);
 
   const entriesQuery = useMemoFirebase(
-    () => (selectedClassId ? collectionGroup(firestore, 'timeEntries') : null),
-    [firestore, selectedClassId]
+    () => (selectedClassId && myProfile?.role === 'professor' ? collectionGroup(firestore, 'timeEntries') : null),
+    [firestore, selectedClassId, myProfile?.role]
   );
   const { data: allEntries, isLoading: entriesLoading } = useCollection<TimeEntry>(entriesQuery);
 

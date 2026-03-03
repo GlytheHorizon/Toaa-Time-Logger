@@ -44,8 +44,8 @@ export default function ProfessorAnnounceChatClient() {
   );
 
   const studentProfilesQuery = useMemoFirebase(
-    () => (selectedClassId ? collectionGroup(firestore, 'userProfile') : null),
-    [firestore, selectedClassId]
+    () => (selectedClassId && myProfile?.role === 'professor' ? collectionGroup(firestore, 'userProfile') : null),
+    [firestore, selectedClassId, myProfile?.role]
   );
   const { data: allProfiles, isLoading: studentsLoading } = useCollection<UserProfile>(studentProfilesQuery);
 
