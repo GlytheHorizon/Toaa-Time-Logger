@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
@@ -103,6 +104,7 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -253,6 +255,36 @@ export default function LoginPage() {
     }
 
     setIsSubmitting(false);
+  };
+
+  const handleForgotPassword = async () => {
+    const email = form.getValues('email')?.trim();
+
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'Email required',
+        description: 'Enter your email first, then tap Forgot password.',
+      });
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: 'Reset email sent',
+        description: 'Check your inbox for password reset instructions.',
+      });
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Unable to send reset email',
+        description: 'Please make sure the email is valid and try again.',
+      });
+    } finally {
+      setIsSendingReset(false);
+    }
   };
 
   if (isUserLoading || user) {
@@ -488,6 +520,17 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
+                  <div className="flex justify-end">
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="h-auto p-0 text-xs"
+                      onClick={handleForgotPassword}
+                      disabled={isSendingReset}
+                    >
+                      {isSendingReset ? 'Sending reset email...' : 'Forgot password?'}
+                    </Button>
+                  </div>
                 </>
               )}
 
