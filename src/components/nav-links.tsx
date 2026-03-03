@@ -10,8 +10,13 @@ import Link from 'next/link';
 import { Shield, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { isAdminEmail } from '@/lib/constants';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { cn } from '@/lib/utils';
 
-export function NavLinks() {
+type NavLinksProps = {
+    stacked?: boolean;
+};
+
+export function NavLinks({ stacked = false }: NavLinksProps) {
     const { user } = useUser();
     const firestore = useFirestore();
     const pathname = usePathname();
@@ -85,15 +90,15 @@ export function NavLinks() {
         }, [firestore, myClassIds, myRole, user]);
 
     return (
-        <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
+        <div className={cn('flex items-center gap-2', stacked && 'flex-col items-stretch')}>
+            <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
                 <Link href="/how-to-use">
                     How to Use
                 </Link>
             </Button>
             {user && myRole === 'professor' && (
                 pathname.startsWith('/professor/announce-chat') ? (
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
                         <Link href="/professor">
                             <LayoutDashboard className="mr-2 h-4 w-4" />
                             Dashboard
@@ -105,7 +110,7 @@ export function NavLinks() {
                         </Link>
                     </Button>
                 ) : (
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
                         <Link href="/professor/announce-chat">
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Announce/Chat
@@ -120,14 +125,14 @@ export function NavLinks() {
             )}
             {user && isAdmin && (
                 pathname.startsWith('/ssslogs') ? (
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
                         <Link href="/dashboard">
                             <LayoutDashboard className="mr-2 h-4 w-4" />
                             Dashboard
                         </Link>
                     </Button>
                 ) : (
-                    <Button variant="outline" asChild>
+                    <Button variant="outline" asChild className={cn(stacked && 'justify-start')}>
                         <Link href="/ssslogs">
                             <Shield className="mr-2 h-4 w-4" />
                             Admin

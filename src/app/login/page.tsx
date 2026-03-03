@@ -296,13 +296,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm opacity-0 animate-fade-in-up">
-        <CardHeader className="text-center">
-          <div className="flex justify-center items-center mb-4">
+    <main className="flex min-h-screen flex-col items-stretch justify-start bg-background px-3 py-6 sm:items-center sm:justify-center sm:p-4">
+      <Card className="w-full max-w-sm opacity-0 animate-fade-in-up sm:max-w-md max-h-[calc(100dvh-3rem)] sm:max-h-[calc(100dvh-2rem)] overflow-hidden">
+        <CardHeader className="text-center px-4 pt-5 sm:px-6 sm:pt-6">
+          <div className="flex items-center justify-center mb-3 sm:mb-4">
             <Clock className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-3xl font-headline">
+          <CardTitle className="text-2xl font-headline sm:text-3xl">
             Toaa's TimeLogger
           </CardTitle>
           <CardDescription>
@@ -311,12 +311,12 @@ export default function LoginPage() {
               : 'Sign in to track your internship hours.'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-y-auto px-4 pb-5 sm:px-6 sm:pb-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4">
               {isSignUp && (
                 <>
-                  <div className="text-center text-xs text-muted-foreground">
+                  <div className="text-center text-xs text-muted-foreground px-2">
                     Select registration type
                   </div>
 
@@ -524,7 +524,7 @@ export default function LoginPage() {
                     <Button
                       type="button"
                       variant="link"
-                      className="h-auto p-0 text-xs"
+                      className="h-auto p-0 text-xs text-right whitespace-normal"
                       onClick={handleForgotPassword}
                       disabled={isSendingReset}
                     >
@@ -545,7 +545,7 @@ export default function LoginPage() {
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm leading-relaxed">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             <Button
               variant="link"
