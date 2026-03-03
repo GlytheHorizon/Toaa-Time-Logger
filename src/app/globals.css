@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 275 36% 50%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 210 40% 9.8%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 268 47% 92%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 260 5% 16%;
+    --foreground: 0 0% 98%;
+ 
+    --card: 260 5% 20%;
+    --card-foreground: 0 0% 98%;
+ 
+    --popover: 260 5% 16%;
+    --popover-foreground: 0 0% 98%;
+ 
+    --primary: 275 36% 50%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 240 3.7% 25.9%;
+    --secondary-foreground: 0 0% 98%;
+ 
+    --muted: 240 3.7% 25.9%;
+    --muted-foreground: 240 5% 64.9%;
+ 
+    --accent: 268 47% 65%;
+    --accent-foreground: 0 0% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 240 3.7% 25.9%;
+    --input: 240 3.7% 25.9%;
+    --ring: 268 47% 65%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    @page {
+      size: auto;
+      margin: 0.5in;
+    }
+
+    body {
+      background-color: #fff !important;
+      color: #000 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    /* When printing in dark mode, force light mode variables */
+    .dark {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 210 40% 9.8%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 268 47% 92%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+    }
+
+    .print-container {
+      padding: 0 !important;
+      max-width: 100% !important;
+    }
+    
+    .print-card {
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: none !important;
+      break-inside: avoid;
+    }
+
+    .print-progress-bar div {
+      background-color: hsl(var(--primary)) !important;
+    }
+  }
+}

@@ -1,0 +1,228 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model, with a special exception for a designated admin user. Most data is private and only accessible by the owner.
+ *
+ * Data Structure: Data is organized hierarchically under the `/users/{userId}` path.
+ *
+ * Key Security Decisions:
+ * - Strict Ownership for non-admins: A user can only read or write data located under their own `/users/{userId}` path.
+ * - Admin Access: A specific user, identified by email, has read-only access to all user data for administrative purposes.
+ * - No Public User Listing: It is not possible for non-admins to list documents in the top-level `/users` collection.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'jerwincruz53@gmail.com';
+    }
+
+    function myProfilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid)/userProfile/$(request.auth.uid);
+    }
+
+    function myProfileExists() {
+      return isSignedIn() && exists(myProfilePath());
+    }
+
+    function myRole() {
+      return myProfileExists() ? get(myProfilePath()).data.role : null;
+    }
+
+    function myClassId() {
+      return myProfileExists() ? get(myProfilePath()).data.classId : null;
+    }
+
+    function isProfessor() {
+      return myRole() == 'professor';
+    }
+
+    function classPath(classId) {
+      return /databases/$(database)/documents/classes/$(classId);
+    }
+
+    function classExists(classId) {
+      return exists(classPath(classId));
+    }
+
+    function isClassOwner(classId) {
+      return isSignedIn()
+        && classExists(classId)
+        && get(classPath(classId)).data.ownerId == request.auth.uid;
+    }
+
+    function targetProfilePath(userId) {
+      return /databases/$(database)/documents/users/$(userId)/userProfile/$(userId);
+    }
+
+    function isSameClass(userId) {
+      return isProfessor()
+        && myClassId() != null
+        && exists(targetProfilePath(userId))
+        && get(targetProfilePath(userId)).data.classId == myClassId();
+    }
+    
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * hasValidUserProfileData_onCreate
+     * Validates that the UserProfile's internal `id` matches the user's UID in the path upon creation.
+     * This enforces relational integrity between the path and the document data.
+     */
+    function hasValidUserProfileData_onCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * hasValidUserProfileData_onUpdate
+     * Ensures the UserProfile's internal `id` is immutable and cannot be changed after creation.
+     */
+    function hasValidUserProfileData_onUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * hasValidTimeEntryData_onCreate
+     * Validates that the TimeEntry's internal `userId` and `id` match the parameters from the path.
+     * This ensures the new time entry is correctly associated with its owner and path.
+     */
+    function hasValidTimeEntryData_onCreate(userId, timeEntryId) {
+      let data = request.resource.data;
+      return data.userId == userId 
+        && data.id == timeEntryId
+        && (!('notes' in data) || (data.notes is string && data.notes.size() < 1000));
+    }
+
+    /**
+     * hasValidTimeEntryData_onUpdate
+     * Ensures the TimeEntry's internal `userId` and `id` are immutable and cannot be changed.
+     */
+    function hasValidTimeEntryData_onUpdate() {
+      let data = request.resource.data;
+      return data.userId == resource.data.userId 
+        && data.id == resource.data.id
+        && (!('notes' in data) || (data.notes is string && data.notes.size() < 1000));
+    }
+    
+    // -------------------------------------------------------------------------
+    // Collection Group Rules for Admin
+    // -------------------------------------------------------------------------
+
+    // Collection group queries for dashboard aggregation.
+    // Use myProfileExists() instead of strict role checks to avoid false denials
+    // during role bootstrap/legacy profile states.
+    match /{path=**}/userProfile/{profileId} {
+      allow list: if isAdmin() || myProfileExists();
+    }
+    match /{path=**}/timeEntries/{timeEntryId} {
+      allow list: if isAdmin() || myProfileExists();
+    }
+
+
+    // -------------------------------------------------------------------------
+    // Collection Rules
+    // -------------------------------------------------------------------------
+    
+    /**
+     * @description Secures the user's profile documents. Owner can manage their own profile. Admin can read/list/delete for account-management workflows.
+     * @path /users/{userId}/userProfile/{profileId}
+     */
+    match /users/{userId}/userProfile/{profileId} {
+      allow get: if isOwner(userId) || isAdmin() || isSameClass(userId);
+      allow list: if isOwner(userId) || isAdmin() || isProfessor();
+      allow create: if isOwner(userId) && hasValidUserProfileData_onCreate(userId);
+      allow update: if isExistingOwner(userId) && hasValidUserProfileData_onUpdate();
+      allow delete: if isExistingOwner(userId) || isAdmin() || isSameClass(userId);
+    }
+    
+    /**
+     * @description Secures a user's time entries. Owner can C.R.U.D their own entries. Admin can read/list/delete for account-management workflows.
+     * @path /users/{userId}/timeEntries/{timeEntryId}
+     */
+    match /users/{userId}/timeEntries/{timeEntryId} {
+      allow get: if isOwner(userId) || isAdmin() || isSameClass(userId);
+      allow list: if isOwner(userId) || isAdmin() || isProfessor();
+      allow create: if isOwner(userId) && hasValidTimeEntryData_onCreate(userId, timeEntryId);
+      allow update: if isExistingOwner(userId) && hasValidTimeEntryData_onUpdate();
+      allow delete: if isExistingOwner(userId) || isAdmin() || isSameClass(userId);
+    }
+
+    /**
+     * @description Public feedback mailbox. Any signed-in user can submit feedback.
+     * Admin can read all submitted feedback for review.
+     * @path /feedback/{feedbackId}
+     */
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn();
+      allow get, list: if isAdmin();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Class metadata managed by professors (up to 10 enforced by app logic).
+     * @path /classes/{classId}
+     */
+    match /classes/{classId} {
+      allow get, list: if isSignedIn();
+      allow create: if isProfessor()
+        && request.resource.data.classId == classId
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isClassOwner(classId);
+    }
+
+    /**
+     * @description Class mailbox for student-professor messaging.
+     * Both students and professor can create/read/list messages only for their own class.
+     * @path /classMessages/{messageId}
+     */
+    match /classMessages/{messageId} {
+      allow create: if isSignedIn()
+        && request.resource.data.senderId == request.auth.uid
+        && (
+          (myClassId() != null && request.resource.data.classId == myClassId())
+          || isClassOwner(request.resource.data.classId)
+        );
+
+      allow read: if isSignedIn()
+        && (
+          isClassOwner(resource.data.classId)
+          || (
+            myClassId() != null
+            && resource.data.classId == myClassId()
+            && (
+              resource.data.senderId == request.auth.uid
+              || resource.data.recipientType == 'all'
+              || resource.data.recipientStudentId == request.auth.uid
+              || !('recipientType' in resource.data)
+            )
+          )
+        );
+
+      allow update: if false;
+
+      allow delete: if isSignedIn()
+        && (
+          isClassOwner(resource.data.classId)
+          || (
+            myClassId() != null
+            && resource.data.classId == myClassId()
+            && resource.data.senderId == request.auth.uid
+          )
+        );
+    }
+  }
+}

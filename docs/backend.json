@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile in the TimeLogger Pro application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the user."
+        },
+        "totalRequiredHours": {
+          "type": "number",
+          "description": "Total required internship hours (e.g., 400)."
+        },
+        "internshipStartDate": {
+          "type": "string",
+          "description": "The date the internship started.",
+          "format": "date-time"
+        },
+        "dashboardSubtitle": {
+          "type": "string",
+          "description": "Customizable subtitle for the dashboard."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "displayName",
+        "totalRequiredHours",
+        "internshipStartDate"
+      ]
+    },
+    "TimeEntry": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TimeEntry",
+      "type": "object",
+      "description": "Represents a single time entry logged by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the time entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N TimeEntry)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date the time entry was created.",
+          "format": "date-time"
+        },
+        "hoursWorked": {
+          "type": "number",
+          "description": "Number of hours worked on the specified date."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes or description for the time entry."
+        },
+        "lastUpdatedAt": {
+            "type": "string",
+            "description": "Timestamp of when the entry was last modified.",
+            "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "date",
+        "hoursWorked"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/userProfile",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information. Path-based ownership, ensuring only the authenticated user can access their profile data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/timeEntries/{timeEntryId}",
+        "definition": {
+          "entityName": "TimeEntry",
+          "schema": {
+            "$ref": "#/backend/entities/TimeEntry"
+          },
+          "description": "Stores time entries for each user. Path-based ownership ensures that listing time entries only returns entries belonging to the authenticated user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "timeEntryId",
+              "description": "The unique identifier for the time entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure data isolation and security for each user in the TimeLogger Pro application. It follows a path-based ownership model to maintain the privacy of user-specific data. Each user's profile and time entries are stored under a unique path derived from their `userId`, ensuring only the authenticated user can access their data. This approach provides authorization independence, simplifying security rules and preventing unauthorized access.\n\nThe primary collections are `/users/{userId}/userProfile` and `/users/{userId}/timeEntries/{timeEntryId}`. The `/users/{userId}/userProfile` stores the UserProfile data, while `/users/{userId}/timeEntries/{timeEntryId}` stores TimeEntry records related to the respective user. This hierarchical structure inherently supports the required QAPs (Rules are not Filters) by ensuring that listing operations on `/users/{userId}/timeEntries` only return entries belonging to the authenticated user. Since the time entries are nested under the user's document, listing time entries requires knowing the user ID, which comes from the authentication context (`request.auth.uid`).\n\nThis design avoids the need for complex queries and ensures that security rules can be written based solely on the path and the authenticated user's ID, adhering to the principle of Authorization Independence. It is scalable and maintainable, as adding new users or time entries does not affect the performance or security of other users' data."
+  }
+}
