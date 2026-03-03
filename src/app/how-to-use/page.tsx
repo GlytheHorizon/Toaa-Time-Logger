@@ -8,7 +8,6 @@ import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import type { UserProfile } from '@/lib/types';
 import { collection } from 'firebase/firestore';
-import { useSearchParams } from 'next/navigation';
 
 function ProfessorGuide() {
   return (
@@ -71,7 +70,6 @@ function StudentPersonalGuide({ role }: { role: UserProfile['role'] }) {
 export default function HowToUsePage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const searchParams = useSearchParams();
 
   const myProfileQuery = useMemoFirebase(
     () => (user?.uid ? collection(firestore, 'users', user.uid, 'userProfile') : null),
@@ -80,9 +78,7 @@ export default function HowToUsePage() {
   const { data: myProfileData, isLoading: profileLoading } = useCollection<UserProfile>(myProfileQuery);
 
   const role = myProfileData?.[0]?.role;
-  const roleHint = searchParams.get('role');
-  const hintedRole = roleHint === 'professor' || roleHint === 'student' || roleHint === 'personal' ? roleHint : null;
-  const effectiveRole = role || hintedRole;
+  const effectiveRole = role;
 
   const backHref = useMemo(() => {
     if (effectiveRole === 'professor') return '/professor';
